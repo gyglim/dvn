@@ -4,7 +4,7 @@ This code is a python reference implementation of DVNs introduced in
   Deep Value Networks Learn to Evaluate and Iteratively Refine Structured Outputs. Michael Gygli, Mohammad Norouzi, Anelia Angelova. ICML 2017.
   __[PDF](https://arxiv.org/pdf/1703.04363.pdf)__
 
-It implements the multi-layer perceptron version used for the multi-label classification experiments (Section 5.1).
+__Note__: This code implements the multi-layer perceptron version used for the multi-label classification experiments only (Section 5.1). The segmentation code was written while inside Google and thus not available.
 
 
 ### Requirements
