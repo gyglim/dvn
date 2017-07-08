@@ -29,7 +29,7 @@ def run_bibtex():
     # Train more, with the full training set
     net.train(train_features, train_labels, train_ratio=1, epochs=int(num_epochs * .1))
 
-    test_labels, test_features, tagnames = mlc_datasets.get_bibtex('test')
+    test_labels, test_features, _, __ = mlc_datasets.get_bibtex('test')
 
     # Evaluate the final model
     mlc_datasets.evaluate_f1(net.predict, test_features, test_labels)

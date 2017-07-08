@@ -5,6 +5,7 @@ of our paper "Learning Deep Value Networks to Evaluate and Refine Structured Out
 by Michael Gygli, Mohammad Norouzi, Anelia Angelova
 """
 import sys
+import os
 import Queue
 import numpy as np
 import tensorflow as tf
@@ -100,6 +101,8 @@ class ValueNetwork(object):
     def restore(self, path):
         """restore weights at `path`"""
         self.saver.restore(self.sess, path)
+        self.mean = np.load("%s/mean.npy" % os.path.dirname(path))
+        self.std = np.load("%s/std.npy" % os.path.dirname(path))
 
     def train(self, train_features, train_labels, epochs=1000, batch_size=20, train_ratio=0.9):
         """Train the value net.
@@ -128,6 +131,9 @@ class ValueNetwork(object):
         self.std = np.std(train_features, axis=0).reshape((1, -1)) + 10 ** -6
         train_features -= self.mean
         train_features /= self.std
+
+        np.save("%s/mean.npz" % self.data_dir, self.mean)
+        np.save("%s/std.npz" % self.data_dir, self.std)
 
         # Split of some validation data
         if not hasattr(self, 'indices'):  # use existing splits if there are
@@ -218,6 +224,7 @@ class ValueNetwork(object):
         else:
             pred_labels = self.inference(features, init_labels,
                                          learning_rate=self.inf_lr)
+
             log = True
 
         # Score the predicted labels and return the labels and scores
@@ -250,7 +257,7 @@ class ValueNetwork(object):
 
         return np.zeros([features.shape[0], self.label_dim])
 
-    def predict(self, features, binarize=True):
+    def predict(self, features, binarize=True, num_iterations=20):
         """
         Predict the labels for some features (single example).
 
@@ -259,6 +266,8 @@ class ValueNetwork(object):
         features
         binarize : bool
             return the binarized results. If false: return scores
+        num_iterations : int
+            number of iterations at inference
 
         Returns
         -------
@@ -272,7 +281,8 @@ class ValueNetwork(object):
 
         labels = self.inference(features.reshape(1, -1),
                                 init_labels,
-                                learning_rate=self.inf_lr).flatten()
+                                learning_rate=self.inf_lr,
+                                num_iterations=num_iterations).flatten()
         if binarize:
             return labels >= 0.5
         else:
@@ -419,6 +429,7 @@ class ValueNetwork(object):
 
         raw_prediction = self.get_prediction(self.features_pl, self.labels_pl)
         predicted_values = tf.sigmoid(raw_prediction)
+        self.predicted_values = predicted_values
         self.loss += tf.nn.sigmoid_cross_entropy_with_logits(logits=raw_prediction,
                                                              labels=self.gt_scores_pl[:, 1])
 
@@ -426,7 +437,7 @@ class ValueNetwork(object):
         self.adv_gradient = tf.gradients(self.loss, self.labels_pl)[0]
 
         # Gradient for inference (maximizing predicted value)
-        self.gradient = tf.gradients(predicted_values, self.labels_pl)[0]
+        self.gradient = tf.gradients(self.predicted_values, self.labels_pl)[0]
         self.train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(tf.reduce_mean(self.loss),
                                                                                          global_step=self.global_step)
 

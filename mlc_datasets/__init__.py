@@ -15,9 +15,10 @@ def evaluate_f1(predictor, features, labels):
 
         f1 = f1_score(lbl, pred_lbl)
         mean_f.append(f1)
-        if idx % 20 == 0:
+        if idx % 100 == 0:
             print "%.3f (%d of %d)" % (np.mean(mean_f), idx, len(features))
     print "%.3f" % (np.mean(mean_f))
+    return np.mean(mean_f)
 
 
 def get_bibtex(split='train'):
@@ -34,11 +35,12 @@ def get_bibtex(split='train'):
     labels = data[:, feature_idx:]
     features = data[:, 0:feature_idx]
     txt_labels = [t[0] for t in dataset['attributes'][1836:]]
+    txt_inputs = [t[0] for t in dataset['attributes'][:1836]]
 
     if split == 'train':
         return labels, features, txt_labels
     else:
-        return labels, features, txt_labels
+        return labels, features, txt_labels, txt_inputs
 
 
 def get_bookmarks(split='train'):
