@@ -13,6 +13,9 @@ Install with
 ```bash
 pip install -r requirements.txt
 ```
+### Playing around with a pre-trained Value Net
+The pre-trained model for the Bibtex dataset is included in this repository.
+This allows you do play around with it and it's predictions, using our __[jupyter notebook](./dvn_tutorial.ipynb)__.
 
 ### Replicating the experiments in the paper
 __Bibtex__
